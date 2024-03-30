@@ -29,7 +29,8 @@ endif()
 
 include_directories(src)
 include_directories(libs)
-add_executable(${PROJECT_NAME} src/main.c)
+include_directories(include)
+add_executable(${PROJECT_NAME} src/main.c src/ball.c)
 #set(raylib_VERBOSE 1)
 target_link_libraries(${PROJECT_NAME} raylib m)
 
