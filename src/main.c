@@ -1,56 +1,96 @@
 /*******************************************************************************************
 *
-*   raylib [core] example - Basic window (adapted for HTML5 platform)
-*
-*   This example is prepared to compile for PLATFORM_WEB and PLATFORM_DESKTOP
-*   As you will notice, code structure is slightly different to the other examples...
-*   To compile it for PLATFORM_WEB just uncomment #define PLATFORM_WEB at beginning
-*
-*   This example has been created using raylib 1.3 (www.raylib.com)
-*   raylib is licensed under an unmodified zlib/libpng license (View raylib.h for details)
-*
-*   Copyright (c) 2015 Ramon Santamaria (@raysan5)
+*  Intial testing using raylib.h
+*  Throw a ball around with the mouse
 *
 ********************************************************************************************/
 
 #include "raylib.h"
+#include <stdio.h>
+#define G 800
 
-#if defined(PLATFORM_WEB)
-    #include <emscripten/emscripten.h>
-#endif
-
-//----------------------------------------------------------------------------------
-// Global Variables Definition
-//----------------------------------------------------------------------------------
-int screenWidth = 800;
-int screenHeight = 450;
-
-//----------------------------------------------------------------------------------
-// Module Functions Declaration
-//----------------------------------------------------------------------------------
-void UpdateDrawFrame(void);     // Update and Draw one frame
-
-//----------------------------------------------------------------------------------
-// Main Entry Point
-//----------------------------------------------------------------------------------
-int main()
+//------------------------------------------------------------------------------------
+// Program main entry point
+//------------------------------------------------------------------------------------
+int main(void)
 {
     // Initialization
     //--------------------------------------------------------------------------------------
-    InitWindow(screenWidth, screenHeight, "raylib [core] example - basic window");
+    const int screenWidth = 800;
+    const int screenHeight = 450;
 
-#if defined(PLATFORM_WEB)
-    emscripten_set_main_loop(UpdateDrawFrame, 0, 1);
-#else
-    SetTargetFPS(60);   // Set our game to run at 60 frames-per-second
-    //--------------------------------------------------------------------------------------
+    InitWindow(screenWidth, screenHeight, "ball throw");
 
+    int ballRadius = 20.0f;
+    Vector2 ballPosition = { 50.0f, 50.0f };
+    Vector2 ballSpeed = { 5.0f, 4.0f };
+    Color ballColor = DARKBLUE;
+    bool dragBall = false;
+
+    SetTargetFPS(60);               // Set our game to run at 60 frames-per-second
+    //---------------------------------------------------------------------------------------
+    
     // Main game loop
+    //---------------------------------------------------------------------------------------
     while (!WindowShouldClose())    // Detect window close button or ESC key
     {
-        UpdateDrawFrame();
+        // Update
+        //---------------------------------------------------------------------------------------
+        float deltaTime = GetFrameTime();
+        Vector2 mouse = GetMousePosition();
+
+        if (CheckCollisionPointCircle(mouse, ballPosition, ballRadius) && IsMouseButtonDown(MOUSE_BUTTON_LEFT)) dragBall = true;
+        if (dragBall)
+        {
+            ballSpeed.x = (mouse.x - ballPosition.x) / deltaTime / 2;
+            ballSpeed.y = (mouse.y - ballPosition.y) / deltaTime / 2;
+            ballPosition = mouse;
+            if (IsMouseButtonReleased(MOUSE_BUTTON_LEFT)) {
+                dragBall= false;
+            }
+        } else 
+        {
+            ballPosition.x += ballSpeed.x*deltaTime;
+            ballPosition.y += ballSpeed.y*deltaTime;
+            ballSpeed.y += G*deltaTime;
+        }
+
+        // Bounds Checking
+        // Left wall
+        if (ballPosition.x >= (GetScreenWidth()-ballRadius)) {
+            ballPosition.x = GetScreenWidth()-ballRadius;
+            ballSpeed.x *= -0.4f; // Bounce dampener
+        }
+        // Right wall
+        if (ballPosition.x <= (ballRadius)) {
+            ballPosition.x = ballRadius;
+            ballSpeed.x *= -0.4f; // Bounce dampener
+        }
+        // Top wall 
+        if (ballPosition.y <= (ballRadius)) {
+            ballPosition.y = ballRadius;
+            ballSpeed.y *= -0.4f; // Bounce dampener
+        }
+        // Bottom wall 
+        if (ballPosition.y >= (GetScreenHeight()-ballRadius)) {
+            ballPosition.y = GetScreenHeight()-ballRadius;
+            ballSpeed.y *= -0.4f; // Bounce dampener
+            ballSpeed.x *= 0.6f; // Friction
+        }
+        //----------------------------------------------------------------------------------
+
+        // Draw
+        BeginDrawing();
+
+            ClearBackground(RAYWHITE);
+            DrawCircleV(ballPosition, ballRadius, ballColor);
+
+            //fprintf(stdout,"delta: %f x:%f y:%f\n",deltaTime, ballSpeed.x, ballSpeed.y);
+            DrawText("throw ball with mouse", 10, 10, 20, DARKGRAY);
+
+        EndDrawing();
+        //----------------------------------------------------------------------------------
     }
-#endif
 
     // De-Initialization
     //--------------------------------------------------------------------------------------
@@ -58,26 +98,4 @@ int main()
     //--------------------------------------------------------------------------------------
 
     return 0;
-}
-
-//----------------------------------------------------------------------------------
-// Module Functions Definition
-//----------------------------------------------------------------------------------
-void UpdateDrawFrame(void)
-{
-    // Update
-    //----------------------------------------------------------------------------------
-    // TODO: Update your variables here
-    //----------------------------------------------------------------------------------
-
-    // Draw
-    //----------------------------------------------------------------------------------
-    BeginDrawing();
-
-        ClearBackground(RAYWHITE);
-
-        DrawText("Congrats! You created your first window!", 190, 200, 20, LIGHTGRAY);
-
-    EndDrawing();
-    //----------------------------------------------------------------------------------
 }

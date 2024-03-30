@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.11) # FetchContent is available in 3.11+
-project(example)
+project(ballthrow)
 
 set(PLATFORM DESKTOP)
 
@@ -31,7 +31,7 @@ include_directories(src)
 include_directories(libs)
 add_executable(${PROJECT_NAME} src/main.c)
 #set(raylib_VERBOSE 1)
-target_link_libraries(${PROJECT_NAME} raylib)
+target_link_libraries(${PROJECT_NAME} raylib m)
 
 # Web Configurations
 if (${PLATFORM} STREQUAL "Web")
